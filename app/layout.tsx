@@ -32,3 +32,8 @@ export default function RootLayout({
     </html>
   );
 }
+/*
+1️⃣ what is Readonly<{ children: React.ReactNode; }>
+
+
+*/
