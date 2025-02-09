@@ -35,5 +35,6 @@ export default function RootLayout({
 /*
 1️⃣ what is Readonly<{ children: React.ReactNode; }>
 
+2️⃣ 
 
 */
