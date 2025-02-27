@@ -1,7 +1,7 @@
 "use client";
 
+import { useTransition, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
@@ -19,10 +19,13 @@ import { CardWrapper } from "@/components/auth/card-wrapper";
 import { Button } from "../ui/button";
 import { FormError } from "@/components/form/form-error";
 import { FormSuccess } from "@/components/form/form-success";
+import { login } from "@/actions/login";
 
 // it's a component not a page, so don't use default export
 export function LoginForm() {
-  const router = useRouter();
+  const [error, setError] = useState<string | undefined>("");
+  const [success, setSuccess] = useState<string | undefined>("");
+  const [isPending, startTransition] = useTransition();
 
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
@@ -32,11 +35,18 @@ export function LoginForm() {
     },
   });
 
-  const handleSubmit = (data: z.infer<typeof LoginSchema>) => {
-    console.log("handle login, data: ", data);
-    if (data) {
-      router.push("/dashboard");
-    }
+  const handleSubmit = (values: z.infer<typeof LoginSchema>) => {
+    // reset the error and suceess
+    setError("");
+    setSuccess("");
+
+    console.log("handle login, data: ", values);
+    startTransition(() => {
+      login(values).then((data) => {
+        setError(data.error);
+        setSuccess(data.success);
+      });
+    });
   };
 
   return (
@@ -61,7 +71,12 @@ export function LoginForm() {
                 <FormItem>
                   <FormLabel className="text-lg">Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="john@doe.com" {...field} type="email" />
+                    <Input
+                      placeholder="john@doe.com"
+                      {...field}
+                      disabled={isPending}
+                      type="email"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -74,7 +89,12 @@ export function LoginForm() {
                 <FormItem>
                   <FormLabel className="text-lg">Password</FormLabel>
                   <FormControl>
-                    <Input placeholder="******" {...field} type="password" />
+                    <Input
+                      placeholder="******"
+                      {...field}
+                      type="password"
+                      disabled={isPending}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -82,9 +102,10 @@ export function LoginForm() {
             />
           </div>
           {/* 两个组件是否展示，依赖于 message 属性是否传值 */}
-          <FormError message="" />
-          <FormSuccess message="" />
-          <Button type="submit" className="w-full">
+          {/* TODO change them to disappear after some time */}
+          <FormError message={error} />
+          <FormSuccess message={success} />
+          <Button type="submit" className="w-full" disabled={isPending}>
             Login
           </Button>
         </form>
