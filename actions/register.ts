@@ -26,6 +26,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
   // });
   // extract the above code to a common method, since we will use it multiple times;
   const existingUser = await getUserByEmail(email);
+
   if (existingUser) {
     return { error: "Email already in use!" };
   }
