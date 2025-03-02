@@ -20,9 +20,16 @@ import { Button } from "../ui/button";
 import { FormError } from "@/components/form/form-error";
 import { FormSuccess } from "@/components/form/form-success";
 import { login } from "@/actions/login";
+import { useSearchParams } from "next/navigation";
 
 // it's a component not a page, so don't use default export
 export function LoginForm() {
+  const searchParams = useSearchParams();
+  const urlError =
+    searchParams.get("error") === "OAuthAccountNotLinked"
+      ? "Email already in use with different provider!"
+      : "";
+
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
@@ -43,8 +50,8 @@ export function LoginForm() {
     console.log("handle login, data: ", values);
     startTransition(() => {
       login(values).then((data) => {
-        setError(data.error);
-        setSuccess(data.success);
+        setError(data?.error);
+        // setSuccess(data?.success);
       });
     });
   };
@@ -103,7 +110,7 @@ export function LoginForm() {
           </div>
           {/* 两个组件是否展示，依赖于 message 属性是否传值 */}
           {/* TODO change them to disappear after some time */}
-          <FormError message={error} />
+          <FormError message={error || urlError} />
           <FormSuccess message={success} />
           <Button type="submit" className="w-full" disabled={isPending}>
             Login
