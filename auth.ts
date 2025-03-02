@@ -3,8 +3,47 @@ import authConfig from "./auth.config";
 
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { db } from "@/lib/db";
+import { getUserById } from "@/data/user";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  callbacks: {
+    // currently this callback is used to show that the power of callback
+    // the function we defined in the following is that, is the emailVerified field is null
+    // then prevent the user logging in.
+    async signIn({ user }) {
+      // 添加类型守卫，用来解决下面 user.id 提示的类型问题
+      if (!user?.id) {
+        // 使用可选链避免运行时错误
+        return false;
+      }
+      const existingUser = await getUserById(user.id);
+
+      if (!existingUser || !existingUser.emailVerified) {
+        return false;
+      }
+      return true;
+    },
+    async session({ token, session }) {
+      if (token.sub && session.user) {
+        session.user.id = token.sub;
+      }
+
+      if (token.role && session.user) {
+        session.user.role = token.role;
+      }
+      return session;
+    },
+    // two callbacks: jwt and session, the data flowed from jwt to session
+    // token contains userId, and we need to pass it to session, so we can use it in page;
+    async jwt({ token }) {
+      // if user not logged, do nothing
+      if (!token.sub) return token;
+      const existingUser = await getUserById(token.sub);
+      if (!existingUser) return token;
+      token.role = existingUser.role;
+      return token;
+    },
+  },
   adapter: PrismaAdapter(db),
   session: { strategy: "jwt" },
   ...authConfig,
