@@ -25,7 +25,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     // currently this callback is used to show that the power of callback
     // the function we defined in the following is that, is the emailVerified field is null
     // then prevent the user logging in.
-    // async signIn({ user }) {
+    // async signIn({ user, account }) {
     //   // 添加类型守卫，用来解决下面 user.id 提示的类型问题
     //   if (!user?.id) {
     //     // 使用可选链避免运行时错误
@@ -38,6 +38,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     //   }
     //   return true;
     // },
+
+    // target: OAuth登录（如Google、GitHub等第三方登录）：直接允许登录，不需要邮箱验证, Credentials登录（用户名密码登录）：要求邮箱必须已验证才能登录
+    async signIn({ user, account }) {
+      // allow oauth without email verification
+      if (account?.provider !== "credentials") {
+        return true;
+      }
+
+      // this check is for the "user.id" type check, since it show that:
+      // Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+      if (!user || !user.id) {
+        return false;
+      }
+      const existingUser = await getUserById(user.id);
+      if (!existingUser?.emailVerified) return false;
+
+      // TODO ADD 2FA check
+
+      return true;
+    },
     async session({ token, session }) {
       if (token.sub && session.user) {
         session.user.id = token.sub;
