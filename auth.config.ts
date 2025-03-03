@@ -18,7 +18,9 @@ export default {
       clientId: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
     }),
+    // this function is for validate whether users' input is valid
     Credentials({
+      // the names of function and parameter can't be other names;
       async authorize(credentials) {
         const validatedFields = LoginSchema.safeParse(credentials);
 
@@ -30,6 +32,7 @@ export default {
 
           const passwordMatch = await bcrypt.compare(password, user.password);
           if (passwordMatch) {
+            // the returned user will flow to jwt in callbacks, then continue to session
             return user;
           }
         }

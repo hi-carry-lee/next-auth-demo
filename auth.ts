@@ -21,6 +21,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       });
     },
   },
+  // the target of callbacks:
+  // 1. it allow to customize the authentication flow
+  // 2. add more
   callbacks: {
     // currently this callback is used to show that the power of callback
     // the function we defined in the following is that, is the emailVerified field is null
