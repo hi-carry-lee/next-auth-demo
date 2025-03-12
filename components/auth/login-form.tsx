@@ -49,10 +49,16 @@ export function LoginForm() {
 
     console.log("handle login, data: ", values);
     startTransition(() => {
-      login(values).then((data) => {
-        setError(data?.error);
-        setSuccess(data?.success);
-      });
+      login(values)
+        .then((data) => {
+          setError(data?.error);
+          setSuccess(data?.success);
+        })
+        .catch((err) => {
+          // 处理非AuthError类型的错误
+          console.error("Unexpected error:", err);
+          setError("发生了意外错误，请稍后再试");
+        });
     });
   };
 
@@ -64,12 +70,7 @@ export function LoginForm() {
       showSocial
     >
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(handleSubmit)}
-          // we could use space-y-4, but we want button to expand to the whole width, so flex is more suitable
-          className="space-y-6"
-        >
-          {/* the div here is just to have a narrow space between two inputs */}
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
           <div className="space-y-4">
             <FormField
               control={form.control}
@@ -108,8 +109,6 @@ export function LoginForm() {
               )}
             />
           </div>
-          {/* 两个组件是否展示，依赖于 message 属性是否传值 */}
-          {/* TODO change them to disappear after some time */}
           <FormError message={error || urlError} />
           <FormSuccess message={success} />
           <Button type="submit" className="w-full" disabled={isPending}>

@@ -14,6 +14,9 @@ import {
 // since Prisma doesn't work on Edge runtime, so we sperate the auth.ts to auth.config.ts
 // then use auth.config.ts in middleware instead of auth.ts
 const { auth } = NextAuth(authConfig);
+// 🌻here auth is used as a higher-order function, its argument is an arrow function
+// and the req in the arrow function is an enhanced object based on original object;
+// but Auth.js doesn't enhance the Response object;
 export default auth((req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
@@ -56,6 +59,7 @@ export const config = {
   // this comes from Clerk, it's said to be a better matcher
   matcher: [
     // Skip Next.js internals and all static files, unless found in search params
+    // 否定前瞻断言(?!...)排除，即排除这些路径，不需要经过middleware；
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     // Always run for API routes
     "/(api|trpc)(.*)",
