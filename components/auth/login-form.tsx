@@ -30,7 +30,7 @@ export function LoginForm() {
       ? "Email already in use with different provider!"
       : "";
 
-  const [error, setError] = useState<string | undefined>("");
+  const [error, setError] = useState("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
 
@@ -51,7 +51,8 @@ export function LoginForm() {
     startTransition(() => {
       login(values)
         .then((data) => {
-          setError(data?.error);
+          // this is a better solution than useState<string | undefined>
+          setError(data?.error ?? "");
           setSuccess(data?.success);
         })
         .catch((err) => {
