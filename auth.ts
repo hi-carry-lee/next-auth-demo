@@ -6,6 +6,9 @@ import { db } from "@/lib/db";
 import { getUserById } from "@/data/user";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  adapter: PrismaAdapter(db),
+  session: { strategy: "jwt", maxAge: 60 * 60 * 24 },
+  ...authConfig,
   pages: {
     // 将 NextAuth.js 默认的登录页面，替换为你自己的自定义页面
     // 所有登录请求和重定向会被发送到此路径，而不是内置的 /api/auth/signin 页面
@@ -21,28 +24,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       });
     },
   },
-  // the target of callbacks:
-  // 1. it allow to customize the authentication flow
-  // 2. add more
   callbacks: {
-    // currently this callback is used to show that the power of callback
-    // the function we defined in the following is that, is the emailVerified field is null
-    // then prevent the user logging in.
-    // async signIn({ user, account }) {
-    //   // 添加类型守卫，用来解决下面 user.id 提示的类型问题
-    //   if (!user?.id) {
-    //     // 使用可选链避免运行时错误
-    //     return false;
-    //   }
-    //   const existingUser = await getUserById(user.id);
-
-    //   if (!existingUser || !existingUser.emailVerified) {
-    //     return false;
-    //   }
-    //   return true;
-    // },
-
-    // target: OAuth登录（如Google、GitHub等第三方登录）：直接允许登录，不需要邮箱验证, Credentials登录（用户名密码登录）：要求邮箱必须已验证才能登录
     async signIn({ user, account }) {
       // allow oauth without email verification
       if (account?.provider !== "credentials") {
@@ -82,12 +64,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
   },
-  adapter: PrismaAdapter(db),
-  session: { strategy: "jwt", maxAge: 60 * 60 * 24 },
-  ...authConfig,
-});
+  // 重写Credentials provider，提供真正的实现
+  // providers: [
+  //   ...authConfig.providers.filter(
+  //     (provider) => provider.id !== "credentials"
+  //   ),
+  //   // 替换为完整实现的Credentials
+  //   {
+  //     id: "credentials",
+  //     name: "Credentials",
+  //     type: "credentials",
+  //     credentials: {},
+  //     async authorize(credentials) {
+  //       const validatedFields = LoginSchema.safeParse(credentials);
 
-/*
-this code is used to adapt for Edge runtime;
-if no need to run on Edge runtime, then no need to use PrismaAdapter.
-*/
+  //       if (validatedFields.success) {
+  //         const { email, password } = validatedFields.data;
+
+  //         const user = await getUserByEmail(email);
+  //         if (!user || !user.password) return null;
+
+  //         const passwordMatch = await bcrypt.compare(password, user.password);
+  //         if (passwordMatch) {
+  //           return user;
+  //         }
+  //       }
+  //       return null;
+  //     },
+  //   },
+  // ],
+});

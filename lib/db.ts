@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 
 /*
-两种方法都能实现在生产环境中每次创建新实例，在开发环境中重用同一个实例
+两种方法都能实现：避免在开发环境中，每次热重载创建新实例
 */
 // VERSION 1
 declare global {

@@ -38,12 +38,18 @@ export default {
         }
         return null;
       },
+      // async authorize() {
+      //   // 这个函数在middleware中不会被调用，仅作为结构占位符
+      //   return null;
+      // }
     }),
   ],
 } satisfies NextAuthConfig;
 
 /*
-🌻 the whole code comes from Auth.js Doc
-this is used to fix Edge runtime issue, since Prisma can't run on Edge;
-so this config auth is used in middleware, auth.ts is integrate with Prisma, it don't need to run on Edge;
+AI的解释，因为这里的 authorize 函数中有使用到Prisma，当部署到Vercel中时，会因为有DB的操作而失败，
+如果没有失败，那么在请求时也会因为Edge环境不支持DB的执行，而报错；
+待测试：按照原有的代码部署到Vercel上，看是否部署成功，
+假如部署成功，那么在运行时检查middleware的日志，看是否有报错；
+或者在Vercel的控制台，找到"Function Logs"标签，实时观察用户访问时产生的错误
 */

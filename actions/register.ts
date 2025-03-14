@@ -19,12 +19,6 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
   const { email, name, password } = validatedFields.data;
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  // check if the email is used by other people;
-  // const existingUser = await db.user.findUnique({
-  //   where: {
-  //     email,
-  //   },
-  // });
   // extract the above code to a common method, since we will use it multiple times;
   const existingUser = await getUserByEmail(email);
 

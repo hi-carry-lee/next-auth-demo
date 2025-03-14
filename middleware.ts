@@ -11,12 +11,9 @@ import {
   DEFAULT_LOGIN_REDIRECT,
 } from "@/route";
 
-// since Prisma doesn't work on Edge runtime, so we sperate the auth.ts to auth.config.ts
-// then use auth.config.ts in middleware instead of auth.ts
 const { auth } = NextAuth(authConfig);
-// 🌻here auth is used as a higher-order function, its argument is an arrow function
-// and the req in the arrow function is an enhanced object based on original object;
-// but Auth.js doesn't enhance the Response object;
+// 🌻here the req is not Nextjs req, it's req from Authjs instead;
+// so we can use 'req.auth'
 export default auth((req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
@@ -26,14 +23,14 @@ export default auth((req) => {
 
   // the order of validate is important
 
-  // if the user accrss api routes, do nothing about it;
+  // for example: api/auth/provider, do nothing on it;
   if (isApiAuthRoute) {
     return NextResponse.next();
   }
 
-  // prevent logged in user to access login or register routes again
-  // if the url matches this situation, then redirect to default url,
-  // here 'nextUrl' is just used to construct absolute path, since default url here is a relative path
+  // for example: /auth/login, or /auth/register
+  // if user has logged in, then redirect to default page;
+  // if not logged in, do nothing about it;
   if (isAuthRoute) {
     if (isLoggedIn) {
       return NextResponse.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
@@ -52,14 +49,16 @@ export default auth((req) => {
 
 /*
 description of this config:
-the hard code url or url by regex, they mean if the url in the address bar of browser,
-then it will execute the above code: auth()
+性能优化：静态资源直接提供，不经过中间件处理，减少不必要的开销
+安全控制：确保所有页面和API请求都经过中间件（可用于认证、授权等），然后在上面的auth函数内，判断哪些请求需要被放行，哪些需要登录才可以使用
+所有API请求（/api/*路径）总是经过中间件处理
+所有tRPC请求（/trpc/*路径）总是经过中间件处理
 */
 export const config = {
   // this comes from Clerk, it's said to be a better matcher
   matcher: [
     // Skip Next.js internals and all static files, unless found in search params
-    // 否定前瞻断言(?!...)排除，即排除这些路径，不需要经过middleware；
+    // 否定断言(?!...)用来实现排除，即排除这些路径，不需要经过middleware；
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     // Always run for API routes
     "/(api|trpc)(.*)",
