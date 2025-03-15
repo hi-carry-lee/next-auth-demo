@@ -28,6 +28,8 @@ export default {
           const { email, password } = validatedFields.data;
 
           const user = await getUserByEmail(email);
+          // consider this situation: user logged in with Google or Github, so there is no password
+          // in this case, we don't let them log in;
           if (!user || !user.password) return null;
 
           const passwordMatch = await bcrypt.compare(password, user.password);

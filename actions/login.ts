@@ -27,9 +27,8 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
   }
 
   if (!existingUser.emailVerified) {
-    const verificationToken = await generateVerificationToken(
-      existingUser.email
-    );
+    // const verificationToken =
+    await generateVerificationToken(existingUser.email);
     return { success: "Confirmation email first" };
   }
 
@@ -37,7 +36,7 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
     await signIn("credentials", {
       email,
       password,
-      redirectTo: DEFAULT_LOGIN_REDIRECT,
+      callbackUrl: DEFAULT_LOGIN_REDIRECT,
     });
     return { success: "Log in successful!" };
   } catch (error) {
@@ -49,7 +48,7 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
           return { error: "Something went wrong!" };
       }
     }
-    // if no this code, it's said redirecting not work????
+    // if no this code, it's said redirecting not work????❓❓❓❓
     throw error;
   }
 };

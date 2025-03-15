@@ -17,6 +17,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     error: "/auth/error",
   },
   events: {
+    // when log in by github, create user and link user is done by authjs;
+    // and the user logged in by github, its email doesn't need to be verified, so we set the emailVerified field here, in this event hook
     async linkAccount({ user }) {
       await db.user.update({
         where: { id: user.id },
@@ -43,6 +45,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       return true;
     },
+
+    async jwt({ token }) {
+      // if user not logged, do nothing
+      if (!token.sub) {
+        return token;
+      }
+
+      const existingUser = await getUserById(token.sub);
+      if (!existingUser) {
+        return token;
+      }
+
+      token.role = existingUser.role;
+      return token;
+    },
+
     async session({ token, session }) {
       if (token.sub && session.user) {
         session.user.id = token.sub;
@@ -53,17 +71,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return session;
     },
-    // two callbacks: jwt and session, the data flowed from jwt to session
-    // token contains userId, and we need to pass it to session, so we can use it in page;
-    async jwt({ token }) {
-      // if user not logged, do nothing
-      if (!token.sub) return token;
-      const existingUser = await getUserById(token.sub);
-      if (!existingUser) return token;
-      token.role = existingUser.role;
-      return token;
-    },
   },
+
   // 重写Credentials provider，提供真正的实现
   // providers: [
   //   ...authConfig.providers.filter(
