@@ -7,6 +7,7 @@ import { DEFAULT_LOGIN_REDIRECT } from "@/route";
 import { AuthError } from "next-auth";
 import { generateVerificationToken } from "@/lib/tokens";
 import { getUserByEmail } from "@/data/user";
+import { sendVerificationEmail } from "@/lib/mail";
 
 export const login = async (values: z.infer<typeof LoginSchema>) => {
   console.log("login action, data is: ", values);
@@ -27,8 +28,15 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
   }
 
   if (!existingUser.emailVerified) {
-    // const verificationToken =
-    await generateVerificationToken(existingUser.email);
+    // why generate token again? since a user he registerd but didn't verify his email
+    // so when he try to log in, his verify token may expired, anyway we send agian and tell him to verify;
+    const verificationToken = await generateVerificationToken(
+      existingUser.email
+    );
+    await sendVerificationEmail(
+      verificationToken.email,
+      verificationToken.token
+    );
     return { success: "Confirmation email first" };
   }
 
