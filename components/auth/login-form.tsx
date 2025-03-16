@@ -21,6 +21,7 @@ import { FormError } from "@/components/form/form-error";
 import { FormSuccess } from "@/components/form/form-success";
 import { login } from "@/actions/login";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 // it's a component not a page, so don't use default export
 export function LoginForm() {
@@ -105,6 +106,16 @@ export function LoginForm() {
                       disabled={isPending}
                     />
                   </FormControl>
+                  <Button
+                    size="sm"
+                    variant="link"
+                    asChild
+                    className="px-0 font-normal"
+                  >
+                    <Link href={`/auth/reset?email=${form.getValues("email")}`}>
+                      Forgot password?
+                    </Link>
+                  </Button>
                   <FormMessage />
                 </FormItem>
               )}

@@ -20,7 +20,11 @@ export const NewVerificationForm = () => {
 
   // why use this code? since AI said the original code may cause cycle dependency
   useEffect(() => {
-    // 避免重复处理
+    // 避免重复处理，因为setSuccess和setError是发生在异步回调中（then里面）
+    // 组件卸载后，如果存在异步操作，那么可能造成的影响：
+    // a. 不必要的计算和网络资源浪费；
+    // b. 内存泄漏：异步操作持有组件状态和上下文的引用，会阻止垃圾回收机制清理相关内存，在单页应用中频繁切换页面时会累积大量泄漏
+    // c. 潜在的状态混乱，如果重新挂载相同组件，可能导致"幽灵更新"
     let isMounted = true;
 
     if (!token) {

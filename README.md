@@ -7,7 +7,10 @@
 3. Credentials Provider
 4. OAuth Provider (Social login with Google & GitHub)
 5. Forgot password functionality
+   bring email from login page to reset page if email is been input
 6. Email verification
+   send verification email in login and regiter process
+   after verifying token from email, delete token from DB;
 7. Two factor verification (2FA)
 8. User roles (Admin & User)
 9. Login component (Opens in redirect or modal)
