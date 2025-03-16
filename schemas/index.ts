@@ -6,6 +6,7 @@ export const LoginSchema = z.object({
   }),
   // no need to validate the length of password, since some situations like first time login, the password won't satisfy the requirement
   password: z.string().nonempty("You must input your password!"),
+  code: z.optional(z.string()),
 });
 
 export const RegisterSchema = z.object({

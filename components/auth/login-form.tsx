@@ -34,12 +34,14 @@ export function LoginForm() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
+  const [showTwoFactor, setShowTwoFactor] = useState(false);
 
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
       email: "",
       password: "",
+      code: "",
     },
   });
 
@@ -52,14 +54,19 @@ export function LoginForm() {
     startTransition(() => {
       login(values)
         .then((data) => {
-          // this is a better solution than useState<string | undefined>
-          setError(data?.error ?? "");
-          setSuccess(data?.success);
+          if (data.twoFactor) {
+            setShowTwoFactor(true);
+          } else {
+            // this is a better solution than useState<string | undefined>
+            setError(data?.error ?? "");
+            setSuccess(data?.success);
+            form.reset();
+          }
         })
         .catch((err) => {
           // 处理非AuthError类型的错误
           console.error("Unexpected error:", err);
-          setError("发生了意外错误，请稍后再试");
+          setError("Something went wrong!");
         });
     });
   };
@@ -120,6 +127,21 @@ export function LoginForm() {
                 </FormItem>
               )}
             />
+            {showTwoFactor && (
+              <FormField
+                control={form.control}
+                name="code"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-lg">Two Factor Code</FormLabel>
+                    <FormControl>
+                      <Input {...field} disabled={isPending} type="text" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
           </div>
           <FormError message={error || urlError} />
           <FormSuccess message={success} />
