@@ -23,8 +23,12 @@ export default function Home() {
         <p className="text-white text-lg">A simple authentication services</p>
         <div>
           <LoginButton>
-            <Button size="lg" variant="secondary">
-              Sign In
+            <Button
+              size="lg"
+              variant="secondary"
+              className="text-xl px-10 py-8 font-semibold"
+            >
+              Getting Started
             </Button>
           </LoginButton>
         </div>

@@ -37,3 +37,9 @@
 30. Change password with old password confirmation in Settings page
 31. Enable/disable two-factor auth in Settings page
 32. Change user role in Settings page (for development purposes only)
+
+# TODO
+
+1. use redis to store 2fa token and comfirmation data;
+2. add global toast style for error and success message;
+3. after two-factor auth, there is a bug about redirect to settings page;

@@ -5,8 +5,12 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { db } from "@/lib/db";
 import { getUserById } from "@/data/user";
 import { getTwoFactorConfirmationByUserId } from "./data/two-factor-confirmation";
+import { getAccountByUserId } from "./data/account";
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+// current authjs is 5.0.0-beta.25, the return value is unstable_update
+// you can check the source code to determine the latest version
+// location is: packages/next-auth/src/index.ts
+export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
   adapter: PrismaAdapter(db),
   session: { strategy: "jwt", maxAge: 60 * 60 * 24 },
   ...authConfig,
@@ -58,6 +62,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
 
     async jwt({ token }) {
+      console.log("auth.ts - callbacks - jwt");
       // if user not logged, do nothing
       if (!token.sub) {
         return token;
@@ -69,6 +74,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
 
       token.role = existingUser.role;
+      token.isTwoFactorEnabled = existingUser.isTwoFactorEnabled;
+      token.email = existingUser.email;
+      token.name = existingUser.name;
+      const account = await getAccountByUserId(existingUser.id);
+      token.isAuth = !!account;
+
       return token;
     },
 
@@ -80,6 +91,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (token.role && session.user) {
         session.user.role = token.role;
       }
+
+      if (session.user) {
+        // no need to use "as boolean", we can extend the property in next-auth.d.ts
+        session.user.isTwoFactorEnabled = token.isTwoFactorEnabled ?? false;
+      }
+
+      session.user.isOAuth = token.isAuth ?? false;
+      // here no need to assign the name and email from token to session,
+      // since these two values are inherit from token.
+      // only those values not exist in token by default, should be assign explicitly
       return session;
     },
   },

@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
+import { SessionProvider } from "next-auth/react";
+import { auth } from "@/auth";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -28,10 +31,17 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
   return (
-    <html lang="en">
-      <body className={`${poppins.className}  antialiased`}>{children}</body>
-    </html>
+    // this is prerequisite of using client authjs API🚩🚩🚩
+    <SessionProvider session={session}>
+      <html lang="en">
+        <body className={`${poppins.className}  antialiased`}>
+          <Toaster />
+          {children}
+        </body>
+      </html>
+    </SessionProvider>
   );
 }
 /*
