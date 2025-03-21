@@ -81,52 +81,58 @@ export function LoginForm() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
           <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-lg">Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="john@doe.com"
-                      {...field}
-                      disabled={isPending}
-                      type="email"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-lg">Password</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="******"
-                      {...field}
-                      type="password"
-                      disabled={isPending}
-                    />
-                  </FormControl>
-                  <Button
-                    size="sm"
-                    variant="link"
-                    asChild
-                    className="px-0 font-normal"
-                  >
-                    <Link href={`/auth/reset?email=${form.getValues("email")}`}>
-                      Forgot password?
-                    </Link>
-                  </Button>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {!showTwoFactor && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg">Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="john@doe.com"
+                          {...field}
+                          disabled={isPending}
+                          type="email"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg">Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="******"
+                          {...field}
+                          type="password"
+                          disabled={isPending}
+                        />
+                      </FormControl>
+                      <Button
+                        size="sm"
+                        variant="link"
+                        asChild
+                        className="px-0 font-normal"
+                      >
+                        <Link
+                          href={`/auth/reset?email=${form.getValues("email")}`}
+                        >
+                          Forgot password?
+                        </Link>
+                      </Button>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
             {showTwoFactor && (
               <FormField
                 control={form.control}
